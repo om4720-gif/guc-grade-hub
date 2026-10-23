@@ -14,7 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      grades: {
+        Row: {
+          course: string
+          fingerprint: string
+          first_seen_at: string
+          grade: string
+          id: string
+          item: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course: string
+          fingerprint: string
+          first_seen_at?: string
+          grade: string
+          id?: string
+          item: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course?: string
+          fingerprint?: string
+          first_seen_at?: string
+          grade?: string
+          id?: string
+          item?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      guc_accounts: {
+        Row: {
+          created_at: string
+          guc_username: string
+          last_error: string | null
+          last_synced_at: string | null
+          password_cipher: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          guc_username: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          password_cipher: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          guc_username?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          password_cipher?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      webhooks: {
+        Row: {
+          created_at: string
+          id: string
+          last_called_at: string | null
+          last_status: string | null
+          signing_secret: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_called_at?: string | null
+          last_status?: string | null
+          signing_secret: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_called_at?: string | null
+          last_status?: string | null
+          signing_secret?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
