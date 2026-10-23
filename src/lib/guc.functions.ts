@@ -22,7 +22,7 @@ export const getDashboard = createServerFn({ method: "GET" })
 
 export const linkGucAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ username: z.string().trim().min(2).max(120), password: z.string().min(1).max(200) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -54,7 +54,7 @@ export const unlinkGucAccount = createServerFn({ method: "POST" })
 
 export const createApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ name: z.string().trim().min(1).max(60) }).parse(d))
+  .validator((d: unknown) => z.object({ name: z.string().trim().min(1).max(60) }).parse(d))
   .handler(async ({ data, context }) => {
     const { randomHex, sha256Hex } = await import("@/server/crypto.server");
     const key = `guc_${randomHex(24)}`;
@@ -71,7 +71,7 @@ export const createApiKey = createServerFn({ method: "POST" })
 
 export const deleteApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await context.supabase.from("api_keys").delete().eq("id", data.id);
     return { ok: true };
@@ -79,7 +79,7 @@ export const deleteApiKey = createServerFn({ method: "POST" })
 
 export const addWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ url: z.string().url().max(500).refine((u) => u.startsWith("https://"), "Use an https:// link") }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -95,7 +95,7 @@ export const addWebhook = createServerFn({ method: "POST" })
 
 export const deleteWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await context.supabase.from("webhooks").delete().eq("id", data.id);
     return { ok: true };
