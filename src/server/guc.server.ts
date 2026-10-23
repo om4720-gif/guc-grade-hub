@@ -1,4 +1,5 @@
 import { ntlmType1, ntlmType3 } from "./ntlm.server";
+import { KeepAliveConnection } from "./http1.server";
 
 const BASE = "https://apps.guc.edu.eg";
 // Pages that list grades. Add more paths here to collect more grade types.
@@ -24,37 +25,35 @@ function splitUser(raw: string): { user: string; domain: string } {
 
 async function ntlmGet(path: string, rawUser: string, password: string): Promise<string> {
   const { user, domain } = splitUser(rawUser);
-  const url = BASE + path;
-  let r1: Response;
+  const conn = new KeepAliveConnection(new URL(BASE).host);
   try {
-    r1 = await fetch(url, {
-      headers: { Authorization: `NTLM ${ntlmType1()}` },
-      redirect: "manual",
+    let r1;
+    try {
+      r1 = await conn.request("GET", path, { Authorization: `NTLM ${ntlmType1()}` });
+    } catch {
+      throw new GucError("Could not reach the GUC portal.", "unreachable");
+    }
+    const auth = (r1.headers["www-authenticate"] ?? []).join(", ");
+    const challenge = /NTLM\s+([A-Za-z0-9+/=]{20,})/.exec(auth);
+    if (!challenge) {
+      throw new GucError(
+        `GUC portal did not start a login handshake (status ${r1.status}).`,
+        "unexpected",
+      );
+    }
+    const r2 = await conn.request("GET", path, {
+      Authorization: `NTLM ${ntlmType3(challenge[1]!, user, password, domain)}`,
     });
-  } catch {
-    throw new GucError("Could not reach the GUC portal.", "unreachable");
+    if (r2.status === 401) {
+      throw new GucError("GUC rejected the username or password.", "bad_credentials");
+    }
+    if (r2.status < 200 || r2.status >= 300) {
+      throw new GucError(`GUC portal returned status ${r2.status}.`, "unexpected");
+    }
+    return r2.body;
+  } finally {
+    conn.close();
   }
-  const challenge = /NTLM\s+([A-Za-z0-9+/=]+)/.exec(r1.headers.get("www-authenticate") ?? "");
-  await r1.arrayBuffer().catch(() => null);
-  if (!challenge) {
-    throw new GucError(
-      `GUC portal did not start a login handshake (status ${r1.status}).`,
-      "unexpected",
-    );
-  }
-  const r2 = await fetch(url, {
-    headers: { Authorization: `NTLM ${ntlmType3(challenge[1]!, user, password, domain)}` },
-    redirect: "manual",
-  });
-  if (r2.status === 401) {
-    await r2.arrayBuffer().catch(() => null);
-    throw new GucError("GUC rejected the username or password.", "bad_credentials");
-  }
-  if (!r2.ok) {
-    await r2.arrayBuffer().catch(() => null);
-    throw new GucError(`GUC portal returned status ${r2.status}.`, "unexpected");
-  }
-  return r2.text();
 }
 
 const decode = (s: string) =>
