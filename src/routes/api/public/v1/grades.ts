@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/v1/grades")({
         const { data: key } = await supabaseAdmin
           .from("api_keys")
           .select("id,user_id")
-          .eq("key_hash", await sha256Hex(m[1]))
+          .eq("key_hash", await sha256Hex(m[1]!))
           .maybeSingle();
         if (!key) return Response.json({ error: "Invalid API key" }, { status: 401, headers: cors });
         await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", key.id);

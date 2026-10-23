@@ -42,7 +42,7 @@ async function ntlmGet(path: string, rawUser: string, password: string): Promise
     );
   }
   const r2 = await fetch(url, {
-    headers: { Authorization: `NTLM ${ntlmType3(challenge[1], user, password, domain)}` },
+    headers: { Authorization: `NTLM ${ntlmType3(challenge[1]!, user, password, domain)}` },
     redirect: "manual",
   });
   if (r2.status === 401) {
