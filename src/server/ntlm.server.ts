@@ -124,6 +124,11 @@ export function ntlmType3(
   const tiLen = dv2.getUint16(40, true);
   const tiOff = dv2.getUint32(44, true);
   const targetInfo = t2.slice(tiOff, tiOff + tiLen);
+  if (!domain) {
+    const tnLen = dv2.getUint16(12, true);
+    const tnOff = dv2.getUint32(16, true);
+    domain = new TextDecoder("utf-16le").decode(t2.slice(tnOff, tnOff + tnLen));
+  }
 
   const ntHash = md4(utf16le(password));
   const v2Hash = hmacMd5(ntHash, utf16le(username.toUpperCase() + domain));

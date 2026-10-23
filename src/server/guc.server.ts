@@ -16,7 +16,8 @@ export class GucError extends Error {
 export type GradeRow = { course: string; item: string; grade: string };
 
 function splitUser(raw: string): { user: string; domain: string } {
-  const t = raw.trim();
+  let t = raw.trim();
+  if (t.includes("@")) t = t.slice(0, t.indexOf("@"));
   const i = t.indexOf("\\");
   return i > -1 ? { domain: t.slice(0, i), user: t.slice(i + 1) } : { domain: "", user: t };
 }
