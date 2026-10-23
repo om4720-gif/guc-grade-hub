@@ -54,7 +54,7 @@ export function md4(msg: Uint8Array): Uint8Array {
       c = c0,
       d = d0;
     for (let i = 0; i < 16; i++) {
-      const t = rotl((a + F(b, c, d) + X[i]) | 0, [3, 7, 11, 19][i % 4]!);
+      const t = rotl((a + F(b, c, d) + X[i]!) | 0, [3, 7, 11, 19][i % 4]!);
       [a, b, c, d] = [d, t, b, c];
     }
     for (let i = 0; i < 16; i++) {
