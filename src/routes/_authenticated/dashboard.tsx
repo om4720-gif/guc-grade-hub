@@ -90,7 +90,10 @@ function LinkAccount({ onDone }: { onDone: () => void }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const r = await link({ data: { username, password } });
+    const r = await link({ data: { username, password } }).catch(() => ({
+      ok: false as const,
+      error: "Connection dropped. Please try again.",
+    }));
     setBusy(false);
     if (r.ok) {
       toast.success(`Linked! Found ${r.total} grade entries.`);
@@ -134,7 +137,7 @@ function Grades({ data, onChange }: { data: Data; onChange: () => void }) {
 
   async function run() {
     setBusy(true);
-    const r = await sync();
+    const r = await sync().catch(() => ({ ok: false as const, error: "Connection dropped. Please try again." }));
     setBusy(false);
     if (r.ok) toast.success(r.changed ? `${r.changed} new or changed grades` : "No new grades");
     else toast.error(r.error);
