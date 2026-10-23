@@ -3,7 +3,7 @@ import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { RefreshCw, Trash2, Copy } from "lucide-react";
+import { RefreshCw, Trash2, Copy, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +85,7 @@ function LinkAccount({ onDone }: { onDone: () => void }) {
   const link = useServerFn(linkGucAccount);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -115,7 +116,17 @@ function LinkAccount({ onDone }: { onDone: () => void }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="gp">GUC password</Label>
-          <Input id="gp" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <div className="relative">
+            <Input id="gp" type={show ? "text" : "password"} required className="pr-10" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <button
+              type="button"
+              aria-label={show ? "Hide password" : "Show password"}
+              onClick={() => setShow(!show)}
+              className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
         </div>
         <Button className="w-full" disabled={busy}>
           {busy ? "Checking the portal…" : "Link & collect grades"}
