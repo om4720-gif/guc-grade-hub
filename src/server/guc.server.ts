@@ -71,8 +71,8 @@ const decode = (s: string) =>
 
 /** Best-effort parser: reads every innermost HTML table and turns rows into grade entries. */
 export function parseGrades(html: string): GradeRow[] {
-  const tables = [...html.matchAll(/<table\b((?:(?!<table\b)[\s\S])*?)<\/table>/gi)].map((m) => m[1]);
-  const preferred = tables.filter((t) => /id="[^"]*(midDg|grade|Dg)[^"]*"/i.test(t.split(">")[0]));
+  const tables = [...html.matchAll(/<table\b((?:(?!<table\b)[\s\S])*?)<\/table>/gi)].map((m) => m[1] ?? "");
+  const preferred = tables.filter((t) => /id="[^"]*(midDg|grade|Dg)[^"]*"/i.test(t.split(">")[0] ?? ""));
   const chosen = preferred.length ? preferred : tables;
   const rows: GradeRow[] = [];
   const seen = new Map<string, number>();
@@ -86,10 +86,10 @@ export function parseGrades(html: string): GradeRow[] {
       if (cells.length >= 3) {
         course = cells[0] || course;
         item = cells.slice(1, -1).filter(Boolean).join(" – ") || "Grade";
-        grade = cells[cells.length - 1];
+        grade = cells[cells.length - 1] ?? "";
       } else {
-        item = cells[0];
-        grade = cells[1];
+        item = cells[0] ?? "";
+        grade = cells[1] ?? "";
       }
       if (!grade) continue;
       const key = `${course}|${item}`;

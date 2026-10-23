@@ -59,11 +59,11 @@ export function md4(msg: Uint8Array): Uint8Array {
     }
     for (let i = 0; i < 16; i++) {
       const k = (i % 4) * 4 + (i >> 2);
-      const t = rotl((a + G(b, c, d) + X[k] + 0x5a827999) | 0, [3, 5, 9, 13][i % 4]);
+      const t = rotl((a + G(b, c, d) + X[k]! + 0x5a827999) | 0, [3, 5, 9, 13][i % 4]!);
       [a, b, c, d] = [d, t, b, c];
     }
     for (let i = 0; i < 16; i++) {
-      const t = rotl((a + H(b, c, d) + X[r3[i]] + 0x6ed9eba1) | 0, [3, 9, 11, 15][i % 4]);
+      const t = rotl((a + H(b, c, d) + X[r3[i]!]! + 0x6ed9eba1) | 0, [3, 9, 11, 15][i % 4]!);
       [a, b, c, d] = [d, t, b, c];
     }
     a0 = (a0 + a) | 0;
@@ -151,7 +151,7 @@ export function ntlmType3(
   const base = 64;
   const offs = [base, 0, 0, 0, 0, 0];
   const fields = [lmResp, ntResp, d, u, w, new Uint8Array(0)];
-  for (let i = 1; i < fields.length; i++) offs[i] = offs[i - 1] + fields[i - 1].length;
+  for (let i = 1; i < fields.length; i++) offs[i] = offs[i - 1]! + fields[i - 1]!.length;
 
   const head = new Uint8Array(base);
   const dv = new DataView(head.buffer);
@@ -160,7 +160,7 @@ export function ntlmType3(
   fields.forEach((f, i) => {
     dv.setUint16(12 + i * 8, f.length, true);
     dv.setUint16(14 + i * 8, f.length, true);
-    dv.setUint32(16 + i * 8, offs[i], true);
+    dv.setUint32(16 + i * 8, offs[i]!, true);
   });
   const outFlags = (flags & ~(0x40000000 | 0x10 | 0x20)) >>> 0;
   dv.setUint32(60, outFlags, true);
