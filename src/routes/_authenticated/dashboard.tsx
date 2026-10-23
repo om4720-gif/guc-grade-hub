@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -20,7 +20,7 @@ import {
   unlinkGucAccount,
 } from "@/lib/guc.functions";
 
-const dashQuery = queryOptions({ queryKey: ["dashboard"], queryFn: () => getDashboard() });
+const dashQuery = queryOptions({ queryKey: ["dashboard"], queryFn: () => getDashboard(), retry: 2 });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -33,7 +33,21 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(dashQuery),
   component: Dashboard,
+  errorComponent: DashboardError,
 });
+
+function DashboardError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+  return (
+    <main className="flex min-h-screen items-center justify-center px-6">
+      <div className="ledger-card max-w-sm p-8 text-center">
+        <h1 className="text-3xl">Couldn't load your grades</h1>
+        <p className="mt-2 text-sm text-muted-foreground">The connection dropped. Please try again.</p>
+        <Button className="mt-5" onClick={() => { router.invalidate(); reset(); }}>Try again</Button>
+      </div>
+    </main>
+  );
+}
 
 const fmt = (d: string | null | undefined) => (d ? new Date(d).toLocaleString() : "never");
 
@@ -76,7 +90,10 @@ function LinkAccount({ onDone }: { onDone: () => void }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const r = await link({ data: { username, password } });
+    const r = await link({ data: { username, password } }).catch(() => ({
+      ok: false as const,
+      error: "Connection dropped. Please try again.",
+    }));
     setBusy(false);
     if (r.ok) {
       toast.success(`Linked! Found ${r.total} grade entries.`);
@@ -120,7 +137,7 @@ function Grades({ data, onChange }: { data: Data; onChange: () => void }) {
 
   async function run() {
     setBusy(true);
-    const r = await sync();
+    const r = await sync().catch(() => ({ ok: false as const, error: "Connection dropped. Please try again." }));
     setBusy(false);
     if (r.ok) toast.success(r.changed ? `${r.changed} new or changed grades` : "No new grades");
     else toast.error(r.error);
